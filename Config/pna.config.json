@@ -1,0 +1,31 @@
+{
+  "NetBrain": {
+    "BaseUrl": "http://netbrain",
+    "Username" : "api_user",
+    "TenantId": "",
+    "DomainId": "",
+    "TafEndpoint": "",
+    "TafPasskey": "",
+    "TafPasskeySecretPath": "C:\\ProgramData\\PNA\\Secrets\\netbrain-taf-passkey.secret",
+    "IntentColumns": ["intent_a", "intent_b"],
+    "MaxExecuteNiColumns": 10,
+    "PollAttempts": 30,
+    "PollSeconds": 10,
+    "StablePolls": 2
+  },
+  "ServiceNow": {
+    "BaseUrl": "https://company.service-now.com",
+    "Username": "svc-pna",
+    "PasswordSecretPath": "C:\\ProgramData\\PNA\\Secrets\\servicenow.secret",
+    "ScTaskTable": "sc_task",
+    "ChangeTable": "change_request"
+  },
+  "Workflow": {
+    "RunLockMinutes": 30,
+    "StatePath": "C:\\ProgramData\\PNA\\State\\pna-state.json",
+    "LogPath": "C:\\ProgramData\\PNA\\Logs\\pna.log",
+    "ResultTextLimit": 10000,
+    "DedupeWindowHours": 24,
+    "CreateServiceNowRecordsOnlyOnNetBrainSuccess": true
+  }
+}
