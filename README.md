@@ -1,4 +1,4 @@
-# PNA / NetBrain → ServiceNow Integration
+# NetBrain → ServiceNow Integration
 
 PowerShell-based automation for running **NetBrain TAF Lite**, inspecting the results, creating remediation artifacts in NetBrain, and then creating linked records in **ServiceNow**.
 
