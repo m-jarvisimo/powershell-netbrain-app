@@ -60,7 +60,7 @@ function Start-PNATafLiteRun {
     )
 
 #    $intentColumns = ConvertTo-PNAIntentColumns -InputObject $Config.NetBrain.IntentColumns
-#    $maxCols = [int]$Config.NetBrain.MaxExecuteNiColumns
+    $maxCols = [int]$Config.NetBrain.MaxExecuteNiColumns
 
     return Invoke-PNAHttpRequest -BaseUrl $Config.NetBrain.BaseUrl -Method 'Post' -Path '/ServicesAPI/API/V3/TAF/Lite/run' -Headers @{
         token = $Token
@@ -69,8 +69,8 @@ function Start-PNATafLiteRun {
         passKey       = $Config.NetBrain.TafPasskey
 #        passKey       = (Get-PNASecretString -Path $Config.NetBrain.TafPasskeySecretPath)
 #        intentColumns = $intentColumns
-        option        = @{ rawData = $true; dataSource = 0}
-#        option        = @{ rawData = $true; dataSource = 0; maxExecuteNIColumn = $maxCols }
+#        option        = @{ rawData = $true; dataSource = 0}
+        option        = @{ rawData = $true; dataSource = 0; maxExecuteNIColumn = $maxCols }
     }
 }
 
