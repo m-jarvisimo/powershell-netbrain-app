@@ -14,6 +14,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+#Set Script path
 $scriptPath = $PSCommandPath
 if (-not $scriptPath) {
     $scriptPath = $MyInvocation.MyCommand.Path
@@ -25,18 +26,22 @@ if (-not $ConfigPath) {
     $ConfigPath = Join-Path $scriptRoot '..\Config\pna.config.json'
 }
 
+#Import modules
 $moduleRoot = Resolve-Path (Join-Path $scriptRoot '..\Modules')
 Import-Module (Join-Path $moduleRoot 'PNA.Core.psm1') -Force
 Import-Module (Join-Path $moduleRoot 'PNA.NetBrain.psm1') -Force 
 Import-Module (Join-Path $moduleRoot 'PNA.ServiceNow.psm1') -Force 
 Import-Module (Join-Path $moduleRoot 'PNA.Workflow.psm1') -Force
 
+#Set supplemental data paths
 $config = Get-PNAConfig -Path $ConfigPath
 $statePath = $config.Workflow.StatePath
 $logPath = $config.Workflow.LogPath
 
+#Log initialization
 Write-PNALog -Message ('PNA starting in mode {0}.' -f $Mode) -LogPath $logPath
 
+#Switch by mode
 try {
     switch ($Mode) {
         'AuthOnly' {
@@ -135,6 +140,7 @@ try {
         }
     }
 }
+#IF failure
 catch {
     Write-PNALog -Message $_.Exception.Message -Level 'ERROR' -LogPath $logPath
     throw
