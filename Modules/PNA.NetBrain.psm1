@@ -10,7 +10,7 @@ function Connect-PNANetBrainSession {
 #    $password = Get-PNASecretString -Path $Config.NetBrain.PasswordSecretPath
     $result = Invoke-PNAHttpRequest -BaseUrl $Config.NetBrain.BaseUrl -Method 'Post' -Path '/ServicesAPI/API/V1/Session' -Body @{
         username = $Config.NetBrain.Username
-        password = $Config.Netbrain.TempPassword
+        password = $Config.NetBrain.TempPassword
     }
 
     $token = $null

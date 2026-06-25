@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter()]
-    [string]$ConfigPath = (Join-Path $PSScriptRoot '..\Config\pna.config.json'),
+    [string]$ConfigPath,
     [Parameter()]
     [switch]$WhatIf,
     [Parameter()]
@@ -11,10 +11,21 @@ param(
     [string]$TaskId
 )
 
-Set-StrictMode -Version Late
+Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$moduleRoot = Resolve-Path (Join-Path $PSScriptRoot '..\Modules')
+$scriptPath = $PSCommandPath
+if (-not $scriptPath) {
+    $scriptPath = $MyInvocation.MyCommand.Path
+}
+
+$scriptRoot = Split-Path -Parent $scriptPath
+
+if (-not $ConfigPath) {
+    $ConfigPath = Join-Path $scriptRoot '..\Config\pna.config.json'
+}
+
+$moduleRoot = Resolve-Path (Join-Path $scriptRoot '..\Modules')
 Import-Module (Join-Path $moduleRoot 'PNA.Core.psm1') -Force
 Import-Module (Join-Path $moduleRoot 'PNA.NetBrain.psm1') -Force 
 Import-Module (Join-Path $moduleRoot 'PNA.ServiceNow.psm1') -Force 
@@ -52,7 +63,7 @@ try {
             }
             exit 0
         }
-
+        
         'TafResult' {
             if (-not $TaskId) {
                 throw 'TaskId is required when Mode is TafResult.'
@@ -60,26 +71,47 @@ try {
 
             $nbSession = Connect-PNANetBrainSession -Config $config
             $complete = Wait-PNATafLiteCompletion -Config $config -Token $nbSession.Token -TaskId $TaskId -LogPath $logPath
+            $completeItems = @($complete)
 
-            [pscustomobject]@{
-                Mode         = 'TafResult'
-                TaskId       = $TaskId
-                Status = if ($complete -and $complete.PSObject.Properties.Name -contains 'status') {
-                    $complete.status
+            $resultObject = $completeItems |
+                Where-Object {
+                    $_ -is [psobject] -and
+                    ($_.PSObject.Properties.Name -contains 'intents' -or $_.PSObject.Properties.Name -contains 'taskId')
+                } |
+                Select-Object -Last 1
+
+            $status =
+                if ($resultObject -and $resultObject.PSObject.Properties.Name -contains 'status') {
+                    $resultObject.status
                 }
-                elseif ($complete -and $complete.PSObject.Properties.Name -contains 'Status') {
-                    $complete.Status
+                elseif ($resultObject -and $resultObject.PSObject.Properties.Name -contains 'Status') {
+                    $resultObject.Status
                 }
                 else {
                     $null
                 }
 
-#                Status       = $complete.status
-                IntentCount  = @($complete.intents).Count
-                ResultObject = $complete
+            $intents =
+                if ($resultObject -and $resultObject.PSObject.Properties.Name -contains 'intents') {
+                    @($resultObject.intents)
+                }
+                else {
+                    @()
+                }
+
+            $pollLog = $completeItems | Where-Object { $_ -isnot [psobject] }
+
+            [pscustomobject]@{
+                Mode         = 'TafResult'
+                TaskId       = $TaskId
+                Status       = $status
+                IntentCount  = @($intents).Count
+                ResultObject = $resultObject
+                PollLog      = $pollLog
             }
             exit 0
         }
+
 
         default {
             $lock = Acquire-PNARunLock -StatePath $statePath -Minutes ([int]$config.Workflow.RunLockMinutes)
