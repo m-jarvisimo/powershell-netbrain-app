@@ -44,6 +44,7 @@ Write-PNALog -Message ('PNA starting in mode {0}.' -f $Mode) -LogPath $logPath
 #Switch by mode
 try {
     switch ($Mode) {
+#Auth test. Returns auth token
         'AuthOnly' {
             $nbSession = Connect-PNANetBrainSession -Config $config
             [pscustomobject]@{
@@ -53,7 +54,7 @@ try {
             }
             exit 0
         }
-
+#Run TAF Lite. Returns taskid
         'TafRun' {
             $nbSession = Connect-PNANetBrainSession -Config $config
             $run = Start-PNATafLiteRun -Config $config -Token $nbSession.Token
@@ -68,7 +69,7 @@ try {
             }
             exit 0
         }
-        
+#Fetch TAF Lite result. Returns results in JSON.        
         'TafResult' {
             if (-not $TaskId) {
                 throw 'TaskId is required when Mode is TafResult.'
@@ -117,7 +118,7 @@ try {
             exit 0
         }
 
-
+#Run all modules by default
         default {
             $lock = Acquire-PNARunLock -StatePath $statePath -Minutes ([int]$config.Workflow.RunLockMinutes)
             if (-not $lock.Acquired) {
@@ -140,7 +141,7 @@ try {
         }
     }
 }
-#IF failure
+#IF failure. Log.
 catch {
     Write-PNALog -Message $_.Exception.Message -Level 'ERROR' -LogPath $logPath
     throw
